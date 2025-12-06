@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Daisy UI */
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+/* Custom CSS for the Glowing Profile Card */
+.profile-card {
+  box-shadow: 0 0 15px rgba(128, 0, 128, 0.4);
+  position: relative;
+  z-index: 1;
+}
+
+/* Create the animated glowing border effect using a pseudo-element */
+.profile-card::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  /* Conic gradient for the rotating glow */
+  background: conic-gradient(from 0deg,
+      #1f2937,
+      /* Dark gray */
+      #a855f7,
+      /* Purple */
+      #ec4899,
+      /* Pink */
+      #a855f7,
+      /* Purple */
+      #1f2937
+      /* Dark gray */
+    );
+  animation: rotateGlow 5s linear infinite;
+  border-radius: 13px;
+  z-index: -1;
+  opacity: 0.8;
+  filter: blur(8px);
+}
+
+/* Keyframes for the Rotating Glow Animation */
+@keyframes rotateGlow {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
