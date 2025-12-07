@@ -8,3 +8,4 @@ export default function Footer() {
     </footer>
   );
 }
+// comment passed here for pushing
