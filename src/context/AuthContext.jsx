@@ -1,14 +1,13 @@
-// // src/context/AuthContext.jsx
 // import React, { createContext, useContext, useEffect, useState } from "react";
-// import { auth, googleProvider } from "../firebase.config";
+// import { auth } from "../firebase.config";
 // import {
 //   onAuthStateChanged,
 //   createUserWithEmailAndPassword,
 //   signInWithEmailAndPassword,
 //   signInWithPopup,
+//   GoogleAuthProvider,
 //   signOut,
 //   updateProfile,
-//   getIdToken,
 // } from "firebase/auth";
 // import axios from "../services/axios.config";
 
@@ -16,93 +15,145 @@
 // export const useAuth = () => useContext(AuthContext);
 
 // export function AuthProvider({ children }) {
-//   const [user, setUser] = useState(null); // firebase user
-//   const [appUser, setAppUser] = useState(null); // backend user doc (role, company, etc.)
+//   const [user, setUser] = useState(null); // Firebase user
+//   const [appUser, setAppUser] = useState(null); // Backend user doc (role, company, etc.)
 //   const [loading, setLoading] = useState(true);
 
-//   // helper to extract friendly error message
+//   const googleProvider = new GoogleAuthProvider();
+
+//   // Helper to extract friendly error message
 //   const extractErrorMessage = (err) => {
 //     if (!err) return "Something went wrong";
 //     if (err?.response?.data?.message) return err.response.data.message;
+//     if (err?.code) {
+//       // Firebase error codes
+//       switch (err.code) {
+//         case "auth/email-already-in-use":
+//           return "This email is already registered";
+//         case "auth/invalid-email":
+//           return "Invalid email address";
+//         case "auth/weak-password":
+//           return "Password is too weak";
+//         case "auth/user-not-found":
+//           return "No user found with this email";
+//         case "auth/wrong-password":
+//           return "Incorrect password";
+//         case "auth/invalid-credential":
+//           return "Invalid email or password";
+//         case "auth/too-many-requests":
+//           return "Too many failed attempts. Try again later";
+//         case "auth/popup-closed-by-user":
+//           return "Sign-in popup was closed";
+//         default:
+//           return err.message;
+//       }
+//     }
 //     if (err?.message) return err.message;
 //     return String(err);
 //   };
 
-//   // fetch current app user from backend
+//   // Fetch current app user from backend
 //   const refreshAppUser = async () => {
 //     try {
 //       const res = await axios.get("/auth/me");
 //       setAppUser(res.data);
 //       return res.data;
 //     } catch (err) {
-//       // if unauthorized, clear appUser
+//       // If unauthorized, clear appUser
+//       console.error("Failed to fetch app user:", err);
 //       setAppUser(null);
 //       return null;
 //     }
 //   };
 
+//   // Monitor Firebase auth state
 //   useEffect(() => {
 //     const unsub = onAuthStateChanged(auth, async (fbUser) => {
 //       setLoading(true);
 //       setUser(fbUser);
+
 //       if (fbUser) {
 //         try {
-//           // get firebase idToken (safer than sending email only)
-//           const idToken = await fbUser.getIdToken(/* forceRefresh */ true);
-//           // exchange with backend to get app JWT
-//           const tokenResp = await axios.post("/auth/firebase-login", {
-//             token: idToken,
-//             email: fbUser.email,
-//           });
-//           const token = tokenResp?.data?.token;
-//           if (token) {
-//             localStorage.setItem("assetverse_token", token);
-//           } else {
-//             // ensure no stale token
-//             localStorage.removeItem("assetverse_token");
-//           }
-//           // fetch user doc from backend
+//           // Get Firebase ID token
+//           const idToken = await fbUser.getIdToken(true);
+//           localStorage.setItem("token", idToken);
+
+//           // Sync with backend and get user data
+//           await axios.post(
+//             "/auth/login",
+//             {},
+//             {
+//               headers: {
+//                 Authorization: `Bearer ${idToken}`,
+//               },
+//             }
+//           );
+
+//           // Fetch full user data from backend
 //           await refreshAppUser();
 //         } catch (err) {
-//           console.error("Auth exchange error:", err);
-//           // clear on failure
-//           localStorage.removeItem("assetverse_token");
+//           console.error("Auth sync error:", err);
+//           // If 404, user not registered in backend yet
+//           if (err.response?.status === 404) {
+//             console.log("User not registered in backend yet");
+//           }
+//           localStorage.removeItem("token");
 //           setAppUser(null);
-//         } finally {
-//           setLoading(false);
 //         }
 //       } else {
-//         // logged out
-//         localStorage.removeItem("assetverse_token");
+//         // Logged out
+//         localStorage.removeItem("token");
 //         setAppUser(null);
-//         setLoading(false);
 //       }
+
+//       setLoading(false);
 //     });
 
 //     return () => unsub();
 //   }, []);
 
-//   // Register: create firebase user, update profile, then create backend user doc
-//   const register = async ({
-//     name,
-//     email,
-//     password,
-//     role = "employee",
-//     ...rest
-//   }) => {
+//   // Register: create Firebase user, then create backend user doc
+//   const register = async (email, password, additionalData) => {
 //     setLoading(true);
 //     try {
-//       const res = await createUserWithEmailAndPassword(auth, email, password);
-//       // update display name
-//       await updateProfile(res.user, { displayName: name });
-//       // create backend user doc
-//       const payload = { name, email, role, ...rest };
-//       await axios.post("/auth/register", payload);
-//       // backend may create user; onAuthStateChanged will handle token exchange
-//       return res.user;
+//       // 1. Create Firebase user
+//       const userCredential = await createUserWithEmailAndPassword(
+//         auth,
+//         email,
+//         password
+//       );
+//       const fbUser = userCredential.user;
+
+//       // 2. Update Firebase profile
+//       if (additionalData.name) {
+//         await updateProfile(fbUser, {
+//           displayName: additionalData.name,
+//           photoURL: additionalData.photo || null,
+//         });
+//       }
+
+//       // 3. Get Firebase ID token
+//       const idToken = await fbUser.getIdToken();
+//       localStorage.setItem("token", idToken);
+
+//       // 4. Register in backend
+//       const payload = {
+//         firebaseUid: fbUser.uid,
+//         email: fbUser.email,
+//         name: additionalData.name,
+//         role: additionalData.role || "employee",
+//         dateOfBirth: additionalData.dateOfBirth,
+//         photo: additionalData.photo,
+//         companyName: additionalData.companyName,
+//         companyLogo: additionalData.companyLogo,
+//       };
+
+//       const response = await axios.post("/auth/register", payload);
+//       setAppUser(response.data.user);
+
+//       return { success: true, user: response.data.user };
 //     } catch (err) {
 //       const msg = extractErrorMessage(err);
-//       // rethrow so calling component can show toast
 //       throw new Error(msg);
 //     } finally {
 //       setLoading(false);
@@ -113,9 +164,31 @@
 //   const login = async (email, password) => {
 //     setLoading(true);
 //     try {
-//       const res = await signInWithEmailAndPassword(auth, email, password);
-//       // onAuthStateChanged will exchange token & set appUser
-//       return res.user;
+//       // 1. Sign in with Firebase
+//       const userCredential = await signInWithEmailAndPassword(
+//         auth,
+//         email,
+//         password
+//       );
+//       const fbUser = userCredential.user;
+
+//       // 2. Get Firebase ID token
+//       const idToken = await fbUser.getIdToken();
+//       localStorage.setItem("token", idToken);
+
+//       // 3. Sync with backend
+//       const response = await axios.post(
+//         "/auth/login",
+//         {},
+//         {
+//           headers: {
+//             Authorization: `Bearer ${idToken}`,
+//           },
+//         }
+//       );
+
+//       setAppUser(response.data.user);
+//       return { success: true, user: response.data.user };
 //     } catch (err) {
 //       const msg = extractErrorMessage(err);
 //       throw new Error(msg);
@@ -125,13 +198,51 @@
 //   };
 
 //   // Login with Google
-//   const loginWithGoogle = async () => {
+//   const loginWithGoogle = async (role = "employee", additionalData = {}) => {
 //     setLoading(true);
 //     try {
-//       const res = await signInWithPopup(auth, googleProvider);
-//       // If you want: create backend user doc on first-time sign-in
-//       // onAuthStateChanged will take care of exchange
-//       return res.user;
+//       // 1. Sign in with Google popup
+//       const userCredential = await signInWithPopup(auth, googleProvider);
+//       const fbUser = userCredential.user;
+
+//       // 2. Get Firebase ID token
+//       const idToken = await fbUser.getIdToken();
+//       localStorage.setItem("token", idToken);
+
+//       // 3. Try to login (check if user exists in backend)
+//       try {
+//         const response = await axios.post(
+//           "/auth/login",
+//           {},
+//           {
+//             headers: {
+//               Authorization: `Bearer ${idToken}`,
+//             },
+//           }
+//         );
+
+//         setAppUser(response.data.user);
+//         return { success: true, user: response.data.user };
+//       } catch (loginErr) {
+//         // If user doesn't exist (404), register them
+//         if (loginErr.response?.status === 404) {
+//           const payload = {
+//             firebaseUid: fbUser.uid,
+//             email: fbUser.email,
+//             name: fbUser.displayName,
+//             role: role,
+//             dateOfBirth: additionalData.dateOfBirth || new Date(),
+//             photo: fbUser.photoURL,
+//             companyName: additionalData.companyName,
+//             companyLogo: additionalData.companyLogo,
+//           };
+
+//           const registerResponse = await axios.post("/auth/register", payload);
+//           setAppUser(registerResponse.data.user);
+//           return { success: true, user: registerResponse.data.user };
+//         }
+//         throw loginErr;
+//       }
 //     } catch (err) {
 //       const msg = extractErrorMessage(err);
 //       throw new Error(msg);
@@ -145,13 +256,13 @@
 //     setLoading(true);
 //     try {
 //       await signOut(auth);
-//       localStorage.removeItem("assetverse_token");
+//       localStorage.removeItem("token");
 //       setAppUser(null);
 //       setUser(null);
 //     } catch (err) {
 //       console.error("Logout failed:", err);
-//       // don't throw; logout errors are rare; still clear local state
-//       localStorage.removeItem("assetverse_token");
+//       // Still clear local state even if Firebase logout fails
+//       localStorage.removeItem("token");
 //       setAppUser(null);
 //       setUser(null);
 //     } finally {
@@ -159,26 +270,22 @@
 //     }
 //   };
 
-//   return (
-//     <AuthContext.Provider
-//       value={{
-//         user,
-//         appUser,
-//         loading,
-//         register,
-//         login,
-//         loginWithGoogle,
-//         logout,
-//         setAppUser,
-//         refreshAppUser,
-//       }}
-//     >
-//       {children}
-//     </AuthContext.Provider>
-//   );
+//   const value = {
+//     user, // Firebase user object
+//     appUser, // Backend user data (with role, company, etc.)
+//     loading,
+//     register,
+//     login,
+//     loginWithGoogle,
+//     logout,
+//     setAppUser,
+//     refreshAppUser,
+//   };
+
+//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 // }
 
-// 2..........
+// 2..................................
 
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -187,8 +294,6 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
   signOut,
   updateProfile,
 } from "firebase/auth";
@@ -198,93 +303,105 @@ const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // Firebase user
-  const [appUser, setAppUser] = useState(null); // Backend user doc (role, company, etc.)
+  const [user, setUser] = useState(null);
+  const [appUser, setAppUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const googleProvider = new GoogleAuthProvider();
+  // ✅ Helper: Get Firebase token with retries
+  const getFirebaseToken = async (forceRefresh = false, retries = 3) => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        if (!auth.currentUser) {
+          console.warn(
+            `⚠️ No currentUser, waiting... (${attempt + 1}/${retries})`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          continue;
+        }
 
-  // Helper to extract friendly error message
-  const extractErrorMessage = (err) => {
-    if (!err) return "Something went wrong";
-    if (err?.response?.data?.message) return err.response.data.message;
-    if (err?.code) {
-      // Firebase error codes
-      switch (err.code) {
-        case "auth/email-already-in-use":
-          return "This email is already registered";
-        case "auth/invalid-email":
-          return "Invalid email address";
-        case "auth/weak-password":
-          return "Password is too weak";
-        case "auth/user-not-found":
-          return "No user found with this email";
-        case "auth/wrong-password":
-          return "Incorrect password";
-        case "auth/invalid-credential":
-          return "Invalid email or password";
-        case "auth/too-many-requests":
-          return "Too many failed attempts. Try again later";
-        case "auth/popup-closed-by-user":
-          return "Sign-in popup was closed";
-        default:
-          return err.message;
+        const token = await auth.currentUser.getIdToken(forceRefresh);
+
+        if (!token) {
+          console.warn(`⚠️ Empty token (${attempt + 1}/${retries})`);
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          continue;
+        }
+
+        console.log("✅ Firebase token retrieved");
+        return token;
+      } catch (error) {
+        console.error(
+          `❌ Token error (${attempt + 1}/${retries}):`,
+          error.message
+        );
+        if (attempt < retries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
       }
     }
-    if (err?.message) return err.message;
-    return String(err);
+
+    throw new Error("Failed to get Firebase token");
   };
 
-  // Fetch current app user from backend
-  const refreshAppUser = async () => {
-    try {
-      const res = await axios.get("/auth/me");
-      setAppUser(res.data);
-      return res.data;
-    } catch (err) {
-      // If unauthorized, clear appUser
-      console.error("Failed to fetch app user:", err);
-      setAppUser(null);
-      return null;
+  // ✅ Fetch user from backend with retries
+  const refreshAppUser = async (retries = 3) => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        console.log(`📡 Fetching user data (${attempt + 1}/${retries})...`);
+        const res = await axios.get("/auth/me");
+        setAppUser(res.data);
+        console.log("✅ User data loaded:", res.data.email);
+        return res.data;
+      } catch (err) {
+        console.error(
+          `❌ Fetch user error (${attempt + 1}/${retries}):`,
+          err.message
+        );
+
+        if (attempt < retries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        } else {
+          setAppUser(null);
+          return null;
+        }
+      }
     }
   };
 
-  // Monitor Firebase auth state
+  // ✅ Listen to Firebase auth state changes
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+    console.log("🔐 Setting up auth listener...");
+
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      console.log("🔄 Auth state changed:", fbUser?.email || "logged out");
       setLoading(true);
       setUser(fbUser);
 
       if (fbUser) {
         try {
-          // Get Firebase ID token
-          const idToken = await fbUser.getIdToken(true);
-          localStorage.setItem("token", idToken);
+          // Get Firebase token
+          console.log("⏳ Getting Firebase token...");
+          const token = await getFirebaseToken(true);
 
-          // Sync with backend and get user data
-          await axios.post(
-            "/auth/login",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${idToken}`,
-              },
-            }
-          );
+          if (token) {
+            localStorage.setItem("token", token);
+            console.log("✅ Token saved to localStorage");
 
-          // Fetch full user data from backend
-          await refreshAppUser();
-        } catch (err) {
-          console.error("Auth sync error:", err);
-          // If 404, user not registered in backend yet
-          if (err.response?.status === 404) {
-            console.log("User not registered in backend yet");
+            // Fetch user data from backend
+            await refreshAppUser();
+          } else {
+            console.error("❌ No token received");
+            localStorage.removeItem("token");
+            setAppUser(null);
           }
+        } catch (err) {
+          console.error("❌ Auth initialization error:", err);
           localStorage.removeItem("token");
           setAppUser(null);
         }
       } else {
-        // Logged out
+        // User logged out
+        console.log("👋 User logged out");
         localStorage.removeItem("token");
         setAppUser(null);
       }
@@ -292,159 +409,172 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 
-  // Register: create Firebase user, then create backend user doc
-  const register = async (email, password, additionalData) => {
+  // ✅ REGISTER
+  const register = async ({
+    name,
+    email,
+    password,
+    role = "employee",
+    dateOfBirth,
+    companyName,
+    companyLogo,
+  }) => {
     setLoading(true);
+    console.log("📝 Starting registration for:", email);
+
     try {
-      // 1. Create Firebase user
+      // Create Firebase user
+      console.log("🔥 Creating Firebase user...");
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      const fbUser = userCredential.user;
 
-      // 2. Update Firebase profile
-      if (additionalData.name) {
-        await updateProfile(fbUser, {
-          displayName: additionalData.name,
-          photoURL: additionalData.photo || null,
-        });
-      }
+      // Update display name
+      console.log("👤 Updating profile...");
+      await updateProfile(userCredential.user, { displayName: name });
 
-      // 3. Get Firebase ID token
-      const idToken = await fbUser.getIdToken();
-      localStorage.setItem("token", idToken);
+      // Get token
+      console.log("🎫 Getting token...");
+      const token = await getFirebaseToken(true);
+      localStorage.setItem("token", token);
 
-      // 4. Register in backend
+      // Create backend user
+      console.log("💾 Creating backend user...");
       const payload = {
-        firebaseUid: fbUser.uid,
-        email: fbUser.email,
-        name: additionalData.name,
-        role: additionalData.role || "employee",
-        dateOfBirth: additionalData.dateOfBirth,
-        photo: additionalData.photo,
-        companyName: additionalData.companyName,
-        companyLogo: additionalData.companyLogo,
+        firebaseUid: userCredential.user.uid,
+        name,
+        email,
+        role,
+        dateOfBirth,
+        photo: userCredential.user.photoURL || null,
       };
 
-      const response = await axios.post("/auth/register", payload);
-      setAppUser(response.data.user);
+      if (role === "hr") {
+        payload.companyName = companyName;
+        payload.companyLogo = companyLogo || "";
+      }
 
-      return { success: true, user: response.data.user };
+      await axios.post("/auth/register", payload);
+      console.log("✅ Registration complete!");
+
+      return userCredential.user;
     } catch (err) {
-      const msg = extractErrorMessage(err);
-      throw new Error(msg);
+      console.error("❌ Registration error:", err);
+
+      let errorMessage = "Registration failed";
+
+      if (err.code === "auth/email-already-in-use") {
+        errorMessage = "This email is already registered";
+      } else if (err.code === "auth/weak-password") {
+        errorMessage = "Password should be at least 6 characters";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "Invalid email address";
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  // Login with email/password
+  // ✅ LOGIN - THIS IS THE KEY FUNCTION THAT FIXES YOUR ISSUE
   const login = async (email, password) => {
     setLoading(true);
+    console.log("🔐 Starting login for:", email);
+
     try {
-      // 1. Sign in with Firebase
+      // Step 1: Sign in with Firebase
+      console.log("🔥 Authenticating with Firebase...");
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-      const fbUser = userCredential.user;
 
-      // 2. Get Firebase ID token
-      const idToken = await fbUser.getIdToken();
-      localStorage.setItem("token", idToken);
+      console.log("✅ Firebase authentication successful");
 
-      // 3. Sync with backend
-      const response = await axios.post(
-        "/auth/login",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
+      // Step 2: Get Firebase token (CRITICAL - WAIT FOR IT)
+      console.log("⏳ Waiting for Firebase token...");
+      const token = await getFirebaseToken(true);
 
-      setAppUser(response.data.user);
-      return { success: true, user: response.data.user };
-    } catch (err) {
-      const msg = extractErrorMessage(err);
-      throw new Error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Login with Google
-  const loginWithGoogle = async (role = "employee", additionalData = {}) => {
-    setLoading(true);
-    try {
-      // 1. Sign in with Google popup
-      const userCredential = await signInWithPopup(auth, googleProvider);
-      const fbUser = userCredential.user;
-
-      // 2. Get Firebase ID token
-      const idToken = await fbUser.getIdToken();
-      localStorage.setItem("token", idToken);
-
-      // 3. Try to login (check if user exists in backend)
-      try {
-        const response = await axios.post(
-          "/auth/login",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${idToken}`,
-            },
-          }
-        );
-
-        setAppUser(response.data.user);
-        return { success: true, user: response.data.user };
-      } catch (loginErr) {
-        // If user doesn't exist (404), register them
-        if (loginErr.response?.status === 404) {
-          const payload = {
-            firebaseUid: fbUser.uid,
-            email: fbUser.email,
-            name: fbUser.displayName,
-            role: role,
-            dateOfBirth: additionalData.dateOfBirth || new Date(),
-            photo: fbUser.photoURL,
-            companyName: additionalData.companyName,
-            companyLogo: additionalData.companyLogo,
-          };
-
-          const registerResponse = await axios.post("/auth/register", payload);
-          setAppUser(registerResponse.data.user);
-          return { success: true, user: registerResponse.data.user };
-        }
-        throw loginErr;
+      if (!token) {
+        throw new Error("Failed to get authentication token");
       }
+
+      // Step 3: Store token
+      localStorage.setItem("token", token);
+      console.log("✅ Token stored in localStorage");
+
+      // Step 4: Verify with backend
+      console.log("📡 Verifying with backend...");
+      const backendUser = await refreshAppUser();
+
+      if (!backendUser) {
+        throw new Error("Failed to fetch user data from backend");
+      }
+
+      console.log("✅ Login complete!");
+      return userCredential.user;
     } catch (err) {
-      const msg = extractErrorMessage(err);
-      throw new Error(msg);
+      console.error("❌ Login error:", err);
+
+      let errorMessage = "Login failed";
+
+      // Firebase errors
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/wrong-password"
+      ) {
+        errorMessage = "Invalid email or password";
+      } else if (err.code === "auth/user-not-found") {
+        errorMessage = "No account found with this email";
+      } else if (err.code === "auth/too-many-requests") {
+        errorMessage = "Too many failed attempts. Please try again later";
+      } else if (err.code === "auth/user-disabled") {
+        errorMessage = "This account has been disabled";
+      } else if (err.code === "auth/invalid-email") {
+        errorMessage = "Invalid email format";
+      }
+      // Backend errors
+      else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      // Generic errors
+      else if (err.message && !err.message.includes("Firebase")) {
+        errorMessage = err.message;
+      }
+
+      // Clear token on error
+      localStorage.removeItem("token");
+
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  // Logout
+  // ✅ LOGOUT
   const logout = async () => {
     setLoading(true);
+    console.log("👋 Logging out...");
+
     try {
       await signOut(auth);
       localStorage.removeItem("token");
       setAppUser(null);
       setUser(null);
+      console.log("✅ Logout complete");
     } catch (err) {
-      console.error("Logout failed:", err);
-      // Still clear local state even if Firebase logout fails
+      console.error("❌ Logout error:", err);
       localStorage.removeItem("token");
       setAppUser(null);
       setUser(null);
@@ -454,12 +584,11 @@ export function AuthProvider({ children }) {
   };
 
   const value = {
-    user, // Firebase user object
-    appUser, // Backend user data (with role, company, etc.)
+    user,
+    appUser,
     loading,
     register,
     login,
-    loginWithGoogle,
     logout,
     setAppUser,
     refreshAppUser,
