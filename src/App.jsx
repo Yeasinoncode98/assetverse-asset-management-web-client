@@ -19,6 +19,8 @@
 // import AddAsset from "./pages/hr/AddAsset";
 // import AllRequests from "./pages/hr/AllRequests";
 // import Employees from "./pages/hr/Employees";
+// import AvailableEmployees from "./pages/hr/AvailableEmployees";
+// import ProfileHr from "./pages/hr/ProfileHr";
 // import UpgradePackage from "./pages/hr/UpgradePackage";
 
 // /* Employee pages */
@@ -40,7 +42,7 @@
 
 //           {/* any logged-in user */}
 //           <Route element={<ProtectedRoute />}>
-//             <Route path="/employee" element={<EmployeeDashboard />}>
+//             <Route path="/employee/*" element={<EmployeeDashboard />}>
 //               <Route index element={<MyAssets />} />
 //               <Route path="request" element={<RequestAsset />} />
 //               <Route path="team" element={<MyTeam />} />
@@ -50,11 +52,16 @@
 
 //           {/* HR-only */}
 //           <Route element={<HRRoute />}>
-//             <Route path="/hr" element={<HRDashboard />}>
+//             <Route path="/hr/*" element={<HRDashboard />}>
 //               <Route index element={<AssetList />} />
 //               <Route path="add-asset" element={<AddAsset />} />
 //               <Route path="requests" element={<AllRequests />} />
 //               <Route path="employees" element={<Employees />} />
+//               <Route
+//                 path="available-employees"
+//                 element={<AvailableEmployees />}
+//               />
+//               <Route path="profile" element={<ProfileHr />} />
 //               <Route path="upgrade" element={<UpgradePackage />} />
 //             </Route>
 //           </Route>
@@ -66,8 +73,7 @@
 //   );
 // }
 
-// 2..................
-
+// 2..................... analytcs ...............
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -91,6 +97,7 @@ import AllRequests from "./pages/hr/AllRequests";
 import Employees from "./pages/hr/Employees";
 import AvailableEmployees from "./pages/hr/AvailableEmployees";
 import ProfileHr from "./pages/hr/ProfileHr";
+import Analytics from "./pages/hr/Analytics"; // ✅ ADD: Import Analytics
 import UpgradePackage from "./pages/hr/UpgradePackage";
 
 /* Employee pages */
@@ -132,6 +139,8 @@ export default function App() {
                 element={<AvailableEmployees />}
               />
               <Route path="profile" element={<ProfileHr />} />
+              {/* ✅ ADD: Analytics route */}
+              <Route path="analytics" element={<Analytics />} />
               <Route path="upgrade" element={<UpgradePackage />} />
             </Route>
           </Route>

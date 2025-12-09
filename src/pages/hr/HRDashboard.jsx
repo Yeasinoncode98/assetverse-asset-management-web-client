@@ -1,89 +1,3 @@
-// // 2..................
-
-// // import React from "react";
-// // import { Routes, Route, Link, useLocation } from "react-router-dom";
-// // import AssetList from "./AssetList";
-// // import AddAsset from "./AddAsset";
-// // import AllRequests from "./AllRequests";
-// // import Employees from "./Employees";
-// // import AvailableEmployees from "./AvailableEmployees";
-// // import UpgradePackage from "./UpgradePackage";
-
-// // export default function HRDashboard() {
-// //   const location = useLocation();
-
-// //   const navItems = [
-// //     { path: "/hr", label: "Asset List", icon: "📦" },
-// //     { path: "/hr/add-asset", label: "Add Asset", icon: "➕" },
-// //     { path: "/hr/requests", label: "All Requests", icon: "📋" },
-// //     { path: "/hr/employees", label: "My Employees", icon: "👥" },
-// //     {
-// //       path: "/hr/available-employees",
-// //       label: "Available Employees",
-// //       icon: "🔍",
-// //     },
-// //     { path: "/hr/upgrade", label: "Upgrade Package", icon: "⬆️" },
-// //   ];
-
-// //   return (
-// //     <div className="min-h-screen bg-gray-50">
-// //       {/* Top Navbar */}
-// //       <nav className="bg-white shadow-md">
-// //         <div className="container mx-auto px-4 py-4">
-// //           <div className="flex justify-between items-center">
-// //             <h1 className="text-2xl font-bold text-blue-600">HR Dashboard</h1>
-// //             <Link to="/" className="btn btn-ghost btn-sm">
-// //               Back to Home
-// //             </Link>
-// //           </div>
-// //         </div>
-// //       </nav>
-
-// //       <div className="flex">
-// //         {/* Sidebar */}
-// //         <aside className="w-64 bg-white shadow-lg min-h-screen">
-// //           <nav className="p-4">
-// //             <ul className="space-y-2">
-// //               {navItems.map((item) => (
-// //                 <li key={item.path}>
-// //                   <Link
-// //                     to={item.path}
-// //                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
-// //                       location.pathname === item.path
-// //                         ? "bg-blue-600 text-white"
-// //                         : "hover:bg-gray-100 text-gray-700"
-// //                     }`}
-// //                   >
-// //                     <span className="text-xl">{item.icon}</span>
-// //                     <span className="font-medium">{item.label}</span>
-// //                   </Link>
-// //                 </li>
-// //               ))}
-// //             </ul>
-// //           </nav>
-// //         </aside>
-
-// //         {/* Main Content */}
-// //         <main className="flex-1 p-8">
-// //           <Routes>
-// //             <Route path="/" element={<AssetList />} />
-// //             <Route path="/add-asset" element={<AddAsset />} />
-// //             <Route path="/requests" element={<AllRequests />} />
-// //             <Route path="/employees" element={<Employees />} />
-// //             <Route
-// //               path="/available-employees"
-// //               element={<AvailableEmployees />}
-// //             />
-// //             <Route path="/upgrade" element={<UpgradePackage />} />
-// //           </Routes>
-// //         </main>
-// //       </div>
-// //     </div>
-// //   );
-// // }
-
-// // 2//////////////////
-
 // import React, { useState } from "react";
 // import { Routes, Route, Link, useLocation } from "react-router-dom";
 // import AssetList from "./AssetList";
@@ -91,6 +5,7 @@
 // import AllRequests from "./AllRequests";
 // import Employees from "./Employees";
 // import AvailableEmployees from "./AvailableEmployees";
+// import ProfileHr from "./ProfileHr"; // ✅ Import HR Profile component
 // import UpgradePackage from "./UpgradePackage";
 
 // export default function HRDashboard() {
@@ -106,6 +21,12 @@
 //       path: "/hr/available-employees",
 //       label: "Available Employees",
 //       icon: "🔍",
+//     },
+//     // ✅ ADD: HR Profile navigation item
+//     {
+//       path: "/hr/profile",
+//       label: "HR Profile",
+//       icon: "👔",
 //     },
 //     { path: "/hr/upgrade", label: "Upgrade Package", icon: "⬆️" },
 //   ];
@@ -215,6 +136,8 @@
 //               path="/available-employees"
 //               element={<AvailableEmployees />}
 //             />
+//             {/* ✅ ADD: HR Profile route */}
+//             <Route path="/profile" element={<ProfileHr />} />
 //             <Route path="/upgrade" element={<UpgradePackage />} />
 //           </Routes>
 //         </main>
@@ -223,7 +146,7 @@
 //   );
 // }
 
-// ......................2.......................
+// 2.............................Analytics
 import React, { useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import AssetList from "./AssetList";
@@ -231,7 +154,8 @@ import AddAsset from "./AddAsset";
 import AllRequests from "./AllRequests";
 import Employees from "./Employees";
 import AvailableEmployees from "./AvailableEmployees";
-import ProfileHr from "./ProfileHr"; // ✅ Import HR Profile component
+import ProfileHr from "./ProfileHr";
+import Analytics from "./Analytics"; // ✅ Import Analytics component
 import UpgradePackage from "./UpgradePackage";
 
 export default function HRDashboard() {
@@ -248,11 +172,16 @@ export default function HRDashboard() {
       label: "Available Employees",
       icon: "🔍",
     },
-    // ✅ ADD: HR Profile navigation item
     {
       path: "/hr/profile",
       label: "HR Profile",
       icon: "👔",
+    },
+    // ✅ ADD: Analytics navigation item
+    {
+      path: "/hr/analytics",
+      label: "Analytics",
+      icon: "📊",
     },
     { path: "/hr/upgrade", label: "Upgrade Package", icon: "⬆️" },
   ];
@@ -362,8 +291,9 @@ export default function HRDashboard() {
               path="/available-employees"
               element={<AvailableEmployees />}
             />
-            {/* ✅ ADD: HR Profile route */}
             <Route path="/profile" element={<ProfileHr />} />
+            {/* ✅ ADD: Analytics route */}
+            <Route path="/analytics" element={<Analytics />} />
             <Route path="/upgrade" element={<UpgradePackage />} />
           </Routes>
         </main>
