@@ -409,7 +409,7 @@ export default function Profile() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-12">
               {/* Full Name */}
               <div className="form-control">
                 <label className="label">

@@ -89,7 +89,8 @@ import AssetList from "./pages/hr/AssetList";
 import AddAsset from "./pages/hr/AddAsset";
 import AllRequests from "./pages/hr/AllRequests";
 import Employees from "./pages/hr/Employees";
-import AvailableEmployees from "./pages/hr/AvailableEmployees"; // ✅ Import new component
+import AvailableEmployees from "./pages/hr/AvailableEmployees";
+import ProfileHr from "./pages/hr/ProfileHr";
 import UpgradePackage from "./pages/hr/UpgradePackage";
 
 /* Employee pages */
@@ -111,7 +112,6 @@ export default function App() {
 
           {/* any logged-in user */}
           <Route element={<ProtectedRoute />}>
-            {/* FIX 1: Added /* to allow nested employee routes to match */}
             <Route path="/employee/*" element={<EmployeeDashboard />}>
               <Route index element={<MyAssets />} />
               <Route path="request" element={<RequestAsset />} />
@@ -122,7 +122,6 @@ export default function App() {
 
           {/* HR-only */}
           <Route element={<HRRoute />}>
-            {/* FIX 2: Added /* to allow nested HR routes to match (This was the error from the log) */}
             <Route path="/hr/*" element={<HRDashboard />}>
               <Route index element={<AssetList />} />
               <Route path="add-asset" element={<AddAsset />} />
@@ -131,8 +130,8 @@ export default function App() {
               <Route
                 path="available-employees"
                 element={<AvailableEmployees />}
-              />{" "}
-              {/* ✅ New AvailableEmployees route is correctly defined */}
+              />
+              <Route path="profile" element={<ProfileHr />} />
               <Route path="upgrade" element={<UpgradePackage />} />
             </Route>
           </Route>
