@@ -106,6 +106,7 @@ import MyAssets from "./pages/employee/MyAssets";
 import RequestAsset from "./pages/employee/RequestAsset";
 import MyTeam from "./pages/employee/MyTeam";
 import Profile from "./pages/employee/Profile";
+import AboutUs from "./pages/public/AboutUs";
 
 export default function App() {
   return (
@@ -113,6 +114,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/about-us" element={<AboutUs />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register/hr" element={<RegisterHR />} />
           <Route path="/register/employee" element={<RegisterEmployee />} />

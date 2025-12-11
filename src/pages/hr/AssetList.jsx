@@ -150,10 +150,10 @@ export default function AssetList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-black">
             Asset Management
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
+          <p className="text-sm sm:text-base text-green-500 mt-1">
             Manage your company's assets
           </p>
         </div>

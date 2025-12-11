@@ -84,8 +84,8 @@ export default function RequestAsset() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Request Asset</h2>
-        <p className="text-gray-600 mt-1">
+        <h2 className="text-3xl font-bold text-black">Request Asset</h2>
+        <p className="text-green-500 mt-1">
           Browse and request available assets from your company
         </p>
       </div>

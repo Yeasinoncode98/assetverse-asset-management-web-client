@@ -380,8 +380,8 @@ export default function Employees() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">My Employees</h2>
-          <p className="text-gray-600 mt-1">
+          <h2 className="text-3xl font-bold text-black">My Employees</h2>
+          <p className="text-green-500 mt-1">
             Manage your team members and assign assets
           </p>
         </div>

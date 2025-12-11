@@ -80,10 +80,10 @@ export default function MyAssets() {
     <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">
+          <h2 className="text-2xl sm:text-3xl font-bold text-black">
             My Assets
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">
+          <p className="text-sm sm:text-base text-green-500 mt-1">
             View and manage your assigned assets
           </p>
         </div>

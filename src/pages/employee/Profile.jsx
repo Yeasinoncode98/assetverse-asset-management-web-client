@@ -125,10 +125,10 @@ export default function Profile() {
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl">
       {/* Page Header */}
       <div className="mb-10">
-        <h2 className="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">
+        <h2 className="text-4xl font-extrabold text-black mb-2 tracking-tight">
           My Profile 🌟
         </h2>
-        <p className="text-lg text-gray-500">
+        <p className="text-lg text-green-500">
           Manage your personal information and company affiliations.
         </p>
       </div>
@@ -548,8 +548,7 @@ export default function Profile() {
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    Enter a direct image URL (e.g., from Imgur, Cloudinary,
-                    etc.)
+                    Enter a direct image URL (img_bb and etc)
                   </span>
                 </label>
               </div>

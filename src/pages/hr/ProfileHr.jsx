@@ -725,10 +725,10 @@ export default function HRProfile() {
     <div className="container mx-auto px-4 sm:px-6 py-8 max-w-7xl">
       {/* Page Header */}
       <div className="mb-10">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-black mb-2 tracking-tight">
           HR Profile 👔
         </h2>
-        <p className="text-base sm:text-lg text-gray-500">
+        <p className="text-base sm:text-lg text-green-500">
           Manage your personal information and company details.
         </p>
       </div>

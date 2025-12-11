@@ -318,8 +318,8 @@ export default function AllRequests() {
       </div>
 
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">All Requests</h2>
-        <p className="text-gray-600 mt-1">
+        <h2 className="text-3xl font-bold text-black">All Requests</h2>
+        <p className="text-green-500 mt-1">
           Review and manage asset requests from employees
         </p>
       </div>
