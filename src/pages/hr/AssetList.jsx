@@ -251,12 +251,12 @@ export default function AssetList() {
 
       {/* ✅ NEW: Showing X-Y of Z items */}
       {!loading && assets.length > 0 && (
-        <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
+        <div className="flex justify-between items-center mb-4 text-sm text-green-500">
           <span>
             Showing{" "}
-            <span className="font-semibold text-gray-800">{startItem}</span> to{" "}
-            <span className="font-semibold text-gray-800">{endItem}</span> of{" "}
-            <span className="font-semibold text-gray-800">{totalItems}</span>{" "}
+            <span className="font-semibold text-red-800">{startItem}</span> to{" "}
+            <span className="font-semibold text-red-800">{endItem}</span> of{" "}
+            <span className="font-semibold text-red-800">{totalItems}</span>{" "}
             assets
           </span>
           <span className="hidden sm:inline">
