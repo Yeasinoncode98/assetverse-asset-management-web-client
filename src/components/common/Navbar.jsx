@@ -169,7 +169,7 @@ export default function Navbar() {
         className="btn btn-ghost btn-sm"
         onClick={handleLinkClick}
       >
-        AboutUs
+        About-Us
       </Link>
     </>
   );
