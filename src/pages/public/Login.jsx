@@ -423,6 +423,9 @@ export default function Login() {
                 Register as HR
               </Link>
             </p>
+            <p className="text-red-500 mt-2">
+              Please Wait Some Moment!! The Database is Loading
+            </p>
           </div>
         </div>
       </main>
