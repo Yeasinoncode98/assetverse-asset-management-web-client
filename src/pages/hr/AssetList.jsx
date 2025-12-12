@@ -718,7 +718,7 @@
 //   );
 // }
 
-// .................2 Gsap .....................
+// .................2 Overflow to the right fixing .....................
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
