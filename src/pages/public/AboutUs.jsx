@@ -87,10 +87,10 @@ const AboutUs = () => {
   // ===============================================
 
   const heroImages = [
-    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1920&h=1080&fit=crop",
-    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1920&h=1080&fit-crop",
-    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1920&h=1080&fit-crop",
-    "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1920&h=1080&fit-crop",
+    "https://i.postimg.cc/dt05BfYh/pexels-tara-winstead-8386519.jpg",
+    "https://i.postimg.cc/8PGvHfg8/pexels-pixabay-416405.jpg",
+    "https://i.postimg.cc/gcXwHk6s/pexels-yankrukov-7693142.jpg",
+    "https://i.postimg.cc/28swmKn2/pexels-tima-miroshnichenko-7567304.jpg",
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=1080&fit-crop",
   ];
 
